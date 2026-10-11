@@ -1,7 +1,7 @@
 # Pointwise — a rupee wallet with rewards you can trust
 
 Members keep money in a rupee wallet (like Paytm / Amazon Pay), pay and send money from it, earn reward points on every payment,
-and **convert points back into wallet cash at 100 points = ₹3**, paid from a company-funded treasury. Everything lives in a
+and **convert points back into wallet cash at 100 points = ₹2**, paid from a company-funded treasury. Everything lives in a
 tamper-evident ledger.
 Built as a real product: **Node.js + Express + PostgreSQL** backend, **React (Vite)** frontend.
 
