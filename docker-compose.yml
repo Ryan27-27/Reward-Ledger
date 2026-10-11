@@ -1,0 +1,37 @@
+# One command:  docker compose up --build
+# Web: http://localhost:8080   Emails (Mailpit): http://localhost:8025   API health: http://localhost:4000/healthz
+services:
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: pointwise, POSTGRES_PASSWORD: pointwise, POSTGRES_DB: pointwise }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U pointwise"], interval: 5s, retries: 10 }
+
+  mailpit:            # catches every email the app sends — OTPs, credit/debit notices
+    image: axllent/mailpit
+    ports: ["8025:8025"]
+
+  api:
+    build: ./server
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://pointwise:pointwise@db:5432/pointwise
+      AUTO_MIGRATE: "true"
+      JWT_SECRET: ${JWT_SECRET:-change-me-change-me-change-me-change-me-0001}
+      OTP_SECRET: ${OTP_SECRET:-change-me-change-me-change-me-change-me-0002}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-change-me-change-me-change-me-change-me-0003}
+      CORS_ORIGINS: http://localhost:8080
+      APP_URL: http://localhost:8080
+      COOKIE_SECURE: "false"      # set true behind HTTPS
+      ALLOW_SIMULATED_PAYMENTS: "true"   # demo "add money" + card/UPI button. MUST be false in real production (they mint money/points)
+      TRUST_PROXY: "1"
+      SMTP_URL: smtp://mailpit:1025
+    ports: ["4000:4000"]
+
+  client:
+    build: ./client
+    depends_on: [api]
+    ports: ["8080:80"]
+
+volumes: { pgdata: {} }
